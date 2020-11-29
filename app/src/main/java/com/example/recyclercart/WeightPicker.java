@@ -1,11 +1,12 @@
 package com.example.recyclercart;
 
-import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.recyclercart.databinding.WeightPickerDialogBinding;
 
@@ -19,7 +20,7 @@ class WeightPicker {
      *          with 2 NumberPickers (for kg & g)
      */
 
-    public void show(Context context, final OnWeightPickedListener listener){
+    public static void show(Context context, final OnWeightPickedListener listener, ProductAdapter adapter, final int KG, final int GM){
         WeightPickerDialogBinding b = WeightPickerDialogBinding.inflate(
                 LayoutInflater.from(context)
         );
@@ -62,7 +63,7 @@ class WeightPicker {
         //TODO 9 : Try to understand the flow as to how our Listener interface is working
     }
 
-    private void setupNumberPickers(NumberPicker kgPicker, NumberPicker gmPicker) {
+    private static void setupNumberPickers(NumberPicker kgPicker, NumberPicker gmPicker) {
         //TODO 2 : Define this method to setup kg & g NumberPickers as per the given ranges
 
         //kg Range - 0kg to 10kg

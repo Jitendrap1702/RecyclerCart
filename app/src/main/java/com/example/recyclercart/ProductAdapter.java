@@ -1,6 +1,5 @@
 package com.example.recyclercart;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -11,11 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.recyclercart.databinding.ProductItemBinding;
 import com.example.recyclercart.databinding.VariantBasedProductBinding;
 import com.example.recyclercart.databinding.WeightBasedProductBinding;
 import com.example.recyclercart.models.Product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 //public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
@@ -91,19 +90,21 @@ import java.util.List;
 //}
 
 // Adapter for List of products
-  public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     // Needed for inflating layout
     private Context context;
 
     // List of data
-    private List<Product> productList;
+    public List<Product> visibleProducts
+            , allProducts;
 
     int lastSelectedItemPosition;
 
-    public ProductAdapter(Context context, List<Product> productList){
+    public ProductAdapter(Context context, List<Product> products){
         this.context = context;
-        this.productList = productList;
+        allProducts = products;
+        this.visibleProducts = new ArrayList<>(products);
     }
 
     //Inflate the view for item and create a ViewHolder object based on viewType
@@ -116,7 +117,7 @@ import java.util.List;
                     LayoutInflater.from(context)
                     , parent
                     ,false
-                    );
+            );
 
             // Create object of view holder WeightBasedProduct and return
             return new WeightBasedProductVH(b);
@@ -139,7 +140,7 @@ import java.util.List;
 
     @Override
     public int getItemViewType(int position) {
-        return productList.get(position).type;
+        return visibleProducts.get(position).type;
     }
 
     // Binds the data to view
@@ -147,12 +148,14 @@ import java.util.List;
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         // Get the data at position
-        final Product product = productList.get(position);
+        final Product product = visibleProducts.get(position);
 
         if (product.type == Product.WEIGHT_BASED){
 
-            // Get binding
-            WeightBasedProductBinding b = ((WeightBasedProductVH) holder).b;
+            //Get binding
+            //Parent -> Child
+            WeightBasedProductVH vh = (WeightBasedProductVH) holder;
+            WeightBasedProductBinding b = vh.b;
 
             // Bind data
             b.name.setText(product.name);
@@ -199,7 +202,18 @@ import java.util.List;
 
     @Override
     public int getItemCount() {
-        return productList.size();
+        return visibleProducts.size();
+    }
+
+    public void filter(String query) {
+        visibleProducts = new ArrayList<>();
+
+        for(Product product : allProducts){
+            if(product.name.toLowerCase().contains(query.toLowerCase()))
+                visibleProducts.add(product);
+        }
+
+        notifyDataSetChanged();
     }
 
     // View holder for WeightBasedProduct

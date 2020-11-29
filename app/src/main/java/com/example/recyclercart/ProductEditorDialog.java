@@ -7,19 +7,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
-import java.util.regex.Pattern;
 
 import com.example.recyclercart.databinding.DialogProductEditBinding;
 import com.example.recyclercart.models.Product;
 
-public class ProductEditorDialog {
-    private DialogProductEditBinding b;
-    private Product product;
+import java.util.regex.Pattern;
 
-    void show(Context context, Product product, final onProductEditedListener listener){
+public class ProductEditorDialog {
+     DialogProductEditBinding b;
+     Product product;
+
+    public static final byte PRODUCT_ADD =0 , PRODUCT_EDIT =1;
+    int whyProduct;
+    public ProductEditorDialog(int type){
+        whyProduct = type;
+    }
+
+     void show(final Context context, final Product product, final onProductEditedListener listener){
         // inflate
         b = DialogProductEditBinding.inflate(LayoutInflater.from(context));
-        this.product = product;
 
         // Create dialog
         new AlertDialog.Builder(context)
@@ -28,11 +34,13 @@ public class ProductEditorDialog {
                 .setPositiveButton("SAVE", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-                        if (areProductDetailsValid()) {
+                        if (areProductDetailsValid(whyProduct)) {
                             listener.onProductEdited(ProductEditorDialog.this.product);
+
                         }
                         else{
                             Toast.makeText(context, "Invalid Details!!", Toast.LENGTH_SHORT).show();
+
                         }
                     }
                 })
@@ -44,8 +52,8 @@ public class ProductEditorDialog {
                 })
                 .show();
         setupRadioGroup();
-        preFillPreviousDetails();
-
+        if(whyProduct==PRODUCT_EDIT){
+            preFillPreviousDetails();}
     }
 
     private void preFillPreviousDetails() {
@@ -67,13 +75,13 @@ public class ProductEditorDialog {
     }
 
     // check if all variants are valid or not
-        private boolean areProductDetailsValid() {
+        private boolean areProductDetailsValid(int type) {
             // Check name
             String name = b.name.getText().toString().trim();
             if (name.isEmpty()) {
                 return false;
             }
-            product.name = name;
+            //product.name = name;
 
             switch (b.productType.getCheckedRadioButtonId()){
                 case R.id.weight_based_rbtn:
@@ -83,8 +91,16 @@ public class ProductEditorDialog {
                             minQty = b.minQty.getText().toString().trim();
 
                     // Check inputs
-                    if (pricePerKg.isEmpty() || minQty.isEmpty() || !minQty.matches("\\d+(kg|g)")) {
+                    if (pricePerKg.isEmpty() || minQty.isEmpty() || !minQty.matches("\\d+(kg|g)(\\d+(g))*")) {
                         return false;
+                    }
+
+                    // If All Good,set Values to the product
+                    if(type == PRODUCT_EDIT){
+                        product.initWeightBasedProduct(name
+                                ,Integer.parseInt(pricePerKg)
+                                ,extractMinQtyFromString(minQty));
+                        return true;
                     }
 
                     // All good set values of product
@@ -100,8 +116,11 @@ public class ProductEditorDialog {
                     String variants = b.variants.getText().toString().trim();
 
                     // Create Product
-                    product = new Product(name);
-
+                    if (type == PRODUCT_ADD) {
+                        product = new Product(name);
+                    }else{
+                        product.initVarientBasedProduct(name);
+                    }
                     return areVariantsValid(variants);
             }
 
@@ -135,24 +154,29 @@ public class ProductEditorDialog {
 
     // Change visibility of views based on productType selection
     private void setupRadioGroup(){
-        //b.productType.clearCheck();
+        b.productType.clearCheck();
         b.productType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (checkedId == R.id.weight_based_rbtn){
                     b.weightBasedRoot.setVisibility(View.VISIBLE);
+                    b.minQty.setVisibility(View.VISIBLE);
+                    b.price.setVisibility(View.VISIBLE);
                     b.variantsRoot.setVisibility(View.GONE);
                 }
                 else{
                     b.weightBasedRoot.setVisibility(View.GONE);
+                    b.minQty.setVisibility(View.GONE);
+                    b.price.setVisibility(View.GONE);
                     b.variantsRoot.setVisibility(View.VISIBLE);
                 }
             }
         });
     }
     // Listener Interface to notifiy Activity of Dialog
-    interface onProductEditedListener{
+    public  interface onProductEditedListener{
         void onProductEdited(Product product);
         void onCancelled();
     }
+
 }

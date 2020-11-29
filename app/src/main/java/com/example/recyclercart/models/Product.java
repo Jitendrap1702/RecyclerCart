@@ -20,7 +20,7 @@ public class Product implements Serializable{
 
     // Compulsory
     public String name;
-    public byte type;
+    public int type;
 
     // Weight Based
     public int pricePerKg;
@@ -86,5 +86,17 @@ public class Product implements Serializable{
             return g + "g";
         }
         return ((int) minQty) + "kg";
+    }
+
+    public void initWeightBasedProduct(String name, int pricePerkg, float minQty) {
+        type=WEIGHT_BASED;
+        this.name=name;
+        this.pricePerKg=pricePerkg;
+        this.minQty=minQty;
+    }
+
+    public void initVarientBasedProduct(String name) {
+        type=VARIANTS_BASED;
+        this.name=name;
     }
 }
