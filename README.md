@@ -1,4 +1,4 @@
-# RecyclerCart
+# Admin
 **A admin app to create new product list, edit it, and remove it.**
 
 ### Features Included
