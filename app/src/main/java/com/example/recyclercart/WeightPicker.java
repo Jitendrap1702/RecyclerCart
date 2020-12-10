@@ -8,6 +8,7 @@ import android.widget.NumberPicker;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.example.recyclercart.adapters.ProductAdapter;
 import com.example.recyclercart.databinding.WeightPickerDialogBinding;
 
 class WeightPicker {

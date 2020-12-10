@@ -3,6 +3,7 @@ package com.example.recyclercart;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.recyclercart.adapters.ProductAdapter;
 import com.example.recyclercart.constants.Constants;
 import com.example.recyclercart.databinding.ActivityMainBinding;
 import com.example.recyclercart.models.Inventory;
@@ -25,6 +27,7 @@ import com.example.recyclercart.models.Product;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -35,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
      ActivityMainBinding b;
-     List<Product> products;
+     List<Product> list;
      ProductAdapter adapter;
     private SearchView searchView;
 
@@ -52,7 +55,12 @@ public class MainActivity extends AppCompatActivity {
 
         setup();
         loadSavedData();
-        setupProductList();
+        setupTopic();
+        //setupProductList();
+    }
+
+    private void setupTopic() {
+        FirebaseMessaging.getInstance().subscribeToTopic(Constants.ADMIN_TOPIC);
     }
     private void setup() {
         app = (MyApp) getApplicationContext();
@@ -65,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         app.showLoadingDialog(this);
-        Inventory inventory = new Inventory(products);
+        Inventory inventory = new Inventory(list);
 
         // Save on cloud
         app.db.collection(Constants.INVENTORY)
@@ -92,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     private void saveLocally() {
         SharedPreferences preferences = getSharedPreferences("products_data", MODE_PRIVATE);
         preferences.edit()
-                .putString("data", new Gson().toJson(products))
+                .putString("data", new Gson().toJson(list))
                 .apply();
     }
 
@@ -104,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         String json =  mSharedPref.getString(MY_DATA,null);
 
         if(json!=null){
-            products = gson.fromJson(json,new TypeToken<List<Product>>(){}.getType());
+            list = gson.fromJson(json,new TypeToken<List<Product>>(){}.getType());
             setupProductList();
         }
         else{
@@ -128,10 +136,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if(documentSnapshot.exists()){
                             Inventory inventory = documentSnapshot.toObject(Inventory.class);
-                            products = inventory.products;
+                            list = inventory.products;
 
                         } else
-                            products = new ArrayList<>();
+                            list = new ArrayList<>();
                         setupProductList();
                         saveLocally();
                         app.hideLoadingDialog();
@@ -207,44 +215,13 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setupProductList() {
-//        //Create DataSet
-//        List<Product> product = new ArrayList<>(
-//                Arrays.asList(
-//                        new Product("Tomato",20)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                        ,new Product("Potato",30)
-//                        ,new Product("Apple",100)
-//                )
-//        );
-//        //Create Adapter object
-//        ProductAdapter adapter = new ProductAdapter(this,product);
-//        // Set the adapter & layoutManager to RV
-//        b.productID.setAdapter(adapter);
-//        b.productID.setLayoutManager(new LinearLayoutManager(this));
-
-        //  ******  setupProductList() method in case of options menu  *****
-
-        // Create DataSet
-        products = new ArrayList<>();
-        products.add(new Product("Apple", 180, 1));
-        products.add(new Product("Banana", 30, 2));
-        products.add(new Product("grapes", 100, 1));
+//        products = new ArrayList<>();
+//        products.add(new Product("Apple", 180, 1));
+//        products.add(new Product("Banana", 30, 2));
+//        products.add(new Product("grapes", 100, 1));
 
         // Create adapter object
-        adapter = new ProductAdapter(this, products);
+        adapter = new ProductAdapter(this, list);
 
         // Set the adapter & layoutManager to RV
         b.productID.setAdapter(adapter);
@@ -287,8 +264,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.add_item){
+        if (item.getItemId() == R.id.add_item) {
             showProductEditorDialog();
+        }
+        if (item.getItemId() == R.id.all_orders){
+                showOrders();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -309,9 +290,17 @@ public class MainActivity extends AppCompatActivity {
             case R.id.weigth_picker:
                 showWeightPickerForWBP(adapter.visibleProducts.get(adapter.lastSelectedItemPosition).type);
                 return true;
+
         }
         return super.onContextItemSelected(item);
     }
+
+    // Show all orders activity
+    private void showOrders(){
+        Intent intent = new Intent(MainActivity.this, AllOrdersActivity.class);
+        startActivity(intent);
+    }
+
     // Weight Picker Dialog for weightBased Product
     private void showWeightPickerForWBP(int type) {
         if (type==0){
@@ -393,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onProductEdited(Product product) {
                         // Replace old Data
-                        products.set(adapter.lastSelectedItemPosition,product);
+                        list.set(adapter.lastSelectedItemPosition,product);
 
                         // Update View
                         adapter.notifyItemChanged(adapter.lastSelectedItemPosition);
@@ -414,7 +403,7 @@ public class MainActivity extends AppCompatActivity {
                    public void onProductEdited(Product product) {
                        adapter.allProducts.add(product);
                        adapter.visibleProducts.add(product);
-                       adapter.notifyItemInserted(products.size() - 1);
+                       adapter.notifyItemInserted(list.size() - 1);
                        Toast.makeText(MainActivity.this,"Item Added!",Toast.LENGTH_SHORT).show();
 
                    }

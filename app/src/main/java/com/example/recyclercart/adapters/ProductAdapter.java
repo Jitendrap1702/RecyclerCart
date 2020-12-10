@@ -1,4 +1,4 @@
-package com.example.recyclercart;
+package com.example.recyclercart.adapters;
 
 import android.content.Context;
 import android.view.ContextMenu;
@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.recyclercart.MainActivity;
+import com.example.recyclercart.R;
 import com.example.recyclercart.databinding.VariantBasedProductBinding;
 import com.example.recyclercart.databinding.WeightBasedProductBinding;
 import com.example.recyclercart.models.Product;
@@ -99,7 +101,7 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public List<Product> visibleProducts
             , allProducts;
 
-    int lastSelectedItemPosition;
+    public int lastSelectedItemPosition;
 
     public ProductAdapter(Context context, List<Product> products){
         this.context = context;

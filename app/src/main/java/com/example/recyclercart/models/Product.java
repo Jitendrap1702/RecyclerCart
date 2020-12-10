@@ -74,7 +74,7 @@ public class Product implements Serializable{
         return variantsString
                 .replaceFirst("\\[", "")
                 .replaceFirst("]", "")
-                .replaceAll(",", "\n");
+                .replaceAll(",", ", ");
     }
 
     public String minQtyToString() {

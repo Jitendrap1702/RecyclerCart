@@ -11,6 +11,11 @@
     <item
         android:id="@+id/add_item"
         android:icon="@drawable/ic_increment"
-        android:title="Add new item"
-        app:showAsAction="always" />
+        android:title="Add new item" />
+
+    <item
+        android:id="@+id/all_orders"
+        android:title="All Orders" />
+
+
 </menu>

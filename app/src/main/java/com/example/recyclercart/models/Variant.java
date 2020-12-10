@@ -1,5 +1,7 @@
 package com.example.recyclercart.models;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Variant {
 
     public String name;
@@ -10,6 +12,10 @@ public class Variant {
         this.price = price;
     }
 
+    public Variant() {
+    }
+
+    @NotNull
     @Override
     public String toString() {
         return name + " - Rs. " + price;

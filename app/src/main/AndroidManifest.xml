@@ -16,9 +16,21 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.RecyclerCart"
         tools:targetApi="m">
+
+        <activity android:name=".AllOrdersActivity"
+            android:label="All Orders">
+        </activity>
+
+        <service
+            android:name=".fcmsender.MyFCM"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <activity
-            android:name=".MainActivity"
-            android:label="MenuUpdater">
+            android:name=".MainActivity" android:label="Admin">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
